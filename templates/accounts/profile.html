@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;margin:0 auto;">
+    <h1>My Profile</h1>
+    {% if request.user.customer_profile.first.profile_image %}
+    <img src="{{ request.user.customer_profile.first.profile_image.url }}"
+         alt="Profile photo" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:16px;">
+    {% endif %}
+    <p style="margin-bottom:20px;color:#555;">
+        {{ request.user.first_name }} {{ request.user.last_name }} &mdash; {{ request.user.email }}
+    </p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <ul class="errorlist">
+                {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'address_list' %}" class="btn btn-secondary" style="margin-left:8px;">Manage Addresses</a>
+    </form>
+</div>
+{% endblock %}

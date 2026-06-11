@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:480px;margin:0 auto;">
+    <h1>{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <ul class="errorlist">
+                {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">
+            {% if form.instance.pk %}Update{% else %}Add{% endif %} Address
+        </button>
+        <a href="{% url 'address_list' %}" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </form>
+</div>
+{% endblock %}
