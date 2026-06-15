@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Delete Review{% endblock %}
+
+{% block content %}
+
+<div class="card" style="max-width:560px;margin:0 auto;">
+  <h1>Delete review?</h1>
+  <p>Are you sure you want to delete your review for
+     <strong>{{ review.product.product_name }}</strong>? This can't be undone.</p>
+
+  <div style="margin:20px 0;padding:14px 16px;background:#f9f9f9;border-radius:6px;">
+    <div style="font-weight:bold;">Rating: {{ review.rating }} / 5</div>
+    {% if review.comment %}
+      <p style="margin-top:6px;color:#555;">{{ review.comment }}</p>
+    {% endif %}
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a href="{% url 'product_detail' review.product.id %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+{% endblock %}

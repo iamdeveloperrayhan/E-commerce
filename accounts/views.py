@@ -33,7 +33,7 @@ def login_view(request):
         
         if user:
             login(request=request,user=user)
-            return redirect('product_list')
+            return redirect('profile')
         messages.error(request,'Invalid Credentials!')
     
     return render(request,'accounts/login.html')
@@ -47,7 +47,9 @@ def logout_view(request):
 
 @login_required
 def profile(request):
-    customer = get_object_or_404(CustomerProfile,user = request.user)
+    print(request.user.is_authenticated)
+    customer = get_object_or_404(CustomerProfile, user = request.user)
+    print(customer)
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=customer)
         if form.is_valid():

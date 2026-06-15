@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}{% if product %}{{ product.product_name }}{% else %}Product{% endif %}{% endblock %}
+
+{% block content %}
+
+<style>
+  .detail { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  @media (max-width: 700px) { .detail { grid-template-columns: 1fr; } }
+
+  .gallery .main-image {
+    width: 100%; height: 380px; background: #f0f0f0; border-radius: 8px;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    color: #aaa; font-size: 14px;
+  }
+  .gallery .main-image img { width: 100%; height: 100%; object-fit: cover; }
+  .gallery .thumbs { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .gallery .thumbs img {
+    width: 64px; height: 64px; object-fit: cover; border-radius: 4px;
+    border: 1px solid #ddd; cursor: pointer;
+  }
+
+  .info .category-tag {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .5px;
+    color: #007bff; margin-bottom: 8px;
+  }
+  .info h1 { font-size: 28px; margin-bottom: 12px; }
+  .info .price { font-size: 26px; font-weight: bold; color: #222; margin-bottom: 20px; }
+  .info .description { font-size: 15px; color: #555; line-height: 1.6; margin-bottom: 24px; }
+
+  .variants { margin-bottom: 24px; }
+  .variants h3 { font-size: 14px; margin-bottom: 10px; }
+  .variant-list { display: flex; flex-wrap: wrap; gap: 10px; }
+  .variant {
+    border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px;
+    font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .variant .color { font-weight: bold; }
+  .variant .stock { color: #28a745; }
+  .variant .stock.out { color: #dc3545; }
+  .variant .add-form { display: flex; gap: 6px; align-items: center; margin-top: 4px; }
+  .variant .add-form input { width: 56px; padding: 5px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+  .variant .add-form .btn { padding: 6px 12px; font-size: 13px; }
+  .variant .add-form .btn[disabled] { background: #adb5bd; cursor: not-allowed; }
+
+  .empty { text-align: center; padding: 60px 0; color: #888; }
+</style>
+
+{% if product %}
+<div class="detail card">
+
+  <div class="gallery">
+    <div class="main-image">
+      {% with product.product_images.first as img %}
+        {% if img %}
+          <img id="main-image" src="{{ img.image.url }}" alt="{{ product.product_name }}">
+        {% else %}
+          No image
+        {% endif %}
+      {% endwith %}
+    </div>
+    {% if product.product_images.all %}
+    <div class="thumbs">
+      {% for img in product.product_images.all %}
+        <img src="{{ img.image.url }}" alt="{{ product.product_name }}"
+             onclick="document.getElementById('main-image').src = this.src">
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="info">
+    <div class="category-tag">{{ product.category.category_name }}</div>
+    <h1>{{ product.product_name }}</h1>
+    <div class="price">${{ product.price }}</div>
+    <p class="description">{{ product.description|linebreaksbr }}</p>
+
+    {% if product.product_variants.all %}
+    <div class="variants">
+      <h3>Available variants</h3>
+      <div class="variant-list">
+        {% for variant in product.product_variants.all %}
+        <div class="variant">
+          <span class="color">{{ variant.color }}</span>
+          <span class="stock {% if variant.stock == 0 %}out{% endif %}">
+            {% if variant.stock %}{{ variant.stock }} in stock{% else %}Out of stock{% endif %}
+          </span>
+          <form class="add-form" method="post" action="{% url 'add_to_cart' %}">
+            {% csrf_token %}
+            <input type="hidden" name="variant_id" value="{{ variant.id }}">
+            <input type="number" name="quantity" value="1" min="1" max="{{ variant.stock }}"
+                   {% if variant.stock == 0 %}disabled{% endif %}>
+            <button type="submit" class="btn btn-primary" {% if variant.stock == 0 %}disabled{% endif %}>
+              Add to Cart
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'product_list' %}" class="btn btn-secondary">&larr; Back to products</a>
+  </div>
+
+</div>
+
+<!-- Reviews -->
+<div class="card" style="margin-top:24px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2 style="margin:0;">Reviews ({{ product.reviews.count }})</h2>
+    {% if user.is_authenticated %}
+      <a href="{% url 'review_create' product.slug %}" class="btn btn-primary">Write a review</a>
+    {% endif %}
+  </div>
+
+  {% for review in product.reviews.all %}
+  <div style="border-top:1px solid #eee;padding:16px 0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <strong>
+          {% if review.customer.user.first_name %}
+            {{ review.customer.user.first_name }} {{ review.customer.user.last_name }}
+          {% else %}
+            {{ review.customer.user.username }}
+          {% endif %}
+        </strong>
+        <span style="color:#f5a623;margin-left:8px;">
+          {% for _ in "12345"|make_list %}{% if forloop.counter <= review.rating|add:0 %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}
+        </span>
+      </div>
+      {% if review.customer.user == user %}
+      <div style="font-size:13px;">
+        <a href="{% url 'review_update' review.id %}">Edit</a>
+        &middot;
+        <a href="{% url 'review_delete' review.id %}" style="color:#dc3545;">Delete</a>
+      </div>
+      {% endif %}
+    </div>
+    {% if review.comment %}
+      <p style="margin-top:8px;color:#555;">{{ review.comment }}</p>
+    {% endif %}
+  </div>
+  {% empty %}
+  <p style="color:#888;padding:12px 0;">No reviews yet. Be the first to review this product.</p>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="card empty">
+  <p>{{ message|default:"Product detail not found!" }}</p>
+  <a href="{% url 'product_list' %}" style="margin-top:12px;display:inline-block;">Back to products</a>
+</div>
+{% endif %}
+
+{% endblock %}
