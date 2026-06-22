@@ -15,6 +15,8 @@ class Product(TimestampMixin):
     slug = models.SlugField(unique=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=5,decimal_places=2)
+    stripe_product_id = models.CharField(max_length=100,null=True,blank=True)
+    stripe_price_id = models.CharField(max_length=100,null=True,blank=True)
 
     def __str__(self):
         return self.product_name

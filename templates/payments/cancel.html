@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Payment Cancelled{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center;">
+  <h1 style="color:#721c24;">Payment Cancelled</h1>
+  <p>Your payment for <strong>Order #{{ order.id }}</strong> was cancelled and you have not been charged.</p>
+  <div style="margin-top:24px;">
+    <a href="{% url 'cart_detail' %}" class="btn btn-primary">Back to cart</a>
+    <a href="{% url 'product_list' %}" class="btn btn-secondary">Continue shopping</a>
+  </div>
+</div>
+{% endblock %}

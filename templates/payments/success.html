@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center;">
+  <h1 style="color:#155724;">Payment Successful</h1>
+  <p>Thank you! Your payment for <strong>Order #{{ order.id }}</strong> was completed successfully.</p>
+  <p style="margin-top:8px;">Total paid: <strong>${{ order.total_amount }}</strong></p>
+  <a href="{% url 'product_list' %}" class="btn btn-primary" style="margin-top:24px;">Continue shopping</a>
+</div>
+{% endblock %}
